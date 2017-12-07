@@ -71,9 +71,12 @@ class UploaderTest(unittest.TestCase):
     def test_quality_override(self, mocker):
         """should pass quality_override """
         mocker.return_value = MOCK_RESPONSE
-        uploader.upload(TEST_IMAGE, tags=TEST_TAG, quality_override='auto:good')
-        params = mocker.call_args[0][2]
-        self.assertEqual(params['quality_override'], 'auto:good')
+        test_values = ['auto:advanced', 'auto:best', '80:420', 'none']
+        for quality in test_values:
+            uploader.upload(TEST_IMAGE, tags=TEST_TAG, quality_override=quality)
+            params = mocker.call_args[0][2]
+            self.assertEqual(params['quality_override'], quality)
+        # verify explicit works too
         uploader.explicit(TEST_IMAGE, quality_override='auto:best')
         params = mocker.call_args[0][2]
         self.assertEqual(params['quality_override'], 'auto:best')

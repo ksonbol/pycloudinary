@@ -143,10 +143,10 @@ class ApiTest(unittest.TestCase):
         api.resources_by_ids([API_TEST_ID, API_TEST_ID2], context=True, tags=True)
         args, kargs = mocker.call_args
         self.assertTrue(get_uri(args).endswith('/resources/image/upload'), get_uri(args))
-        self.assertIn(('public_ids[]', API_TEST_ID), get_params(args))
-        self.assertIn(('public_ids[]', API_TEST_ID2), get_params(args))
-        self.assertIn(('context', True), get_params(args))
-        self.assertIn(('tags', True), get_params(args))
+        self.assertIn(API_TEST_ID, get_list_param(mocker, 'public_ids'))
+        self.assertIn(API_TEST_ID2, get_list_param(mocker, 'public_ids'))
+        self.assertEqual(get_param(mocker, 'context'), True)
+        self.assertEqual(get_param(mocker, 'tags'), True)
 
     @patch('urllib3.request.RequestMethods.request')
     @unittest.skipUnless(cloudinary.config().api_secret, "requires api_key/api_secret")
@@ -179,7 +179,7 @@ class ApiTest(unittest.TestCase):
         api.delete_derived_resources([API_TEST_ID])
         args, kargs = mocker.call_args
         self.assertTrue(get_uri(args).endswith('/derived_resources'))
-        self.assertIn(('derived_resource_ids[]', API_TEST_ID), get_params(args))
+        self.assertIn(API_TEST_ID, get_list_param(mocker, 'derived_resource_ids'))
 
     @patch('urllib3.request.RequestMethods.request')
     @unittest.skipUnless(cloudinary.config().api_secret, "requires api_key/api_secret")
@@ -195,9 +195,9 @@ class ApiTest(unittest.TestCase):
         method, url, params = mocker.call_args[0][0:3]
         self.assertEqual('DELETE', method)
         self.assertTrue(url.endswith('/resources/image/upload'))
-        self.assertIn(('public_ids[]', public_resource_id), params)
-        self.assertIn(('transformations', utils.build_eager([transformation])), params)
-        self.assertIn(('keep_original', True), params)
+        self.assertIn(public_resource_id, get_list_param(mocker, 'public_ids'))
+        self.assertEqual(get_param(mocker, 'transformations'), utils.build_eager([transformation]))
+        self.assertTrue(get_param(mocker, 'keep_original'))
 
         mocker.return_value = MOCK_RESPONSE
         api.delete_derived_by_transformation(
@@ -206,13 +206,12 @@ class ApiTest(unittest.TestCase):
         method, url, params = mocker.call_args[0][0:3]
         self.assertEqual('DELETE', method)
         self.assertTrue(url.endswith('/resources/raw/fetch'))
-        self.assertIn(('public_ids[]', public_resource_id), params)
-        self.assertIn(('public_ids[]', public_resource_id2), params)
-        self.assertIn(
-            ('transformations', utils.build_eager([transformation, transformation2])),
-            params)
-        self.assertIn(('keep_original', True), params)
-        self.assertIn(('invalidate', True), params)
+        self.assertIn(public_resource_id, get_list_param(mocker, 'public_ids'))
+        self.assertIn(public_resource_id2, get_list_param(mocker, 'public_ids'))
+        self.assertEqual(get_param(mocker, 'transformations'),
+            utils.build_eager([transformation, transformation2]))
+        self.assertTrue(get_param(mocker, 'keep_original'))
+        self.assertTrue(get_param(mocker, 'invalidate'))
 
 
     @patch('urllib3.request.RequestMethods.request')
@@ -224,8 +223,9 @@ class ApiTest(unittest.TestCase):
         args, kargs = mocker.call_args
         self.assertEqual(args[0], 'DELETE')
         self.assertTrue(get_uri(args).endswith('/resources/image/upload'))
-        self.assertIn(('public_ids[]', API_TEST_ID), get_params(args))
-        self.assertIn(('public_ids[]', API_TEST_ID2), get_params(args))
+        param = get_list_param(mocker, 'public_ids')
+        self.assertIn(API_TEST_ID, param)
+        self.assertIn(API_TEST_ID2, param)
 
     @patch('urllib3.request.RequestMethods.request')
     @unittest.skipUnless(cloudinary.config().api_secret, "requires api_key/api_secret")

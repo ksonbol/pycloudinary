@@ -27,3 +27,6 @@ install:
 - pip install tox
 script:
 - tox -e $TOXENV
+branches:
+  except:
+  - staging-test

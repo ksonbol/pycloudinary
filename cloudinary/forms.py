@@ -6,6 +6,7 @@ import cloudinary.utils
 from cloudinary import CloudinaryResource
 from django import forms
 from django.utils.translation import ugettext_lazy as _
+import django.utils.encoding
 
 
 def cl_init_js_callbacks(form, request):
@@ -136,6 +137,7 @@ class CloudinaryFileField(forms.FileField):
         value = super(CloudinaryFileField, self).to_python(value)
         if not value:
             return None
+        value.name = django.utils.encoding.escape_uri_path(value.name)
         if self.autosave:
             return cloudinary.uploader.upload_image(value, **self.options)
         else:

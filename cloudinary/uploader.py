@@ -8,6 +8,8 @@ from six import string_types
 from urllib3 import PoolManager
 from urllib3.exceptions import HTTPError
 
+import django.utils.encoding
+
 import certifi
 import cloudinary
 from cloudinary import utils
@@ -289,7 +291,7 @@ def call_api(action, params, http_headers=None, return_error=False, unsigned=Fal
                     data = file
                 else:
                     # file path
-                    name = file
+                    name = django.utils.encoding.escape_uri_path(file)
                     with open(file, "rb") as opened:
                         data = opened.read()
             elif hasattr(file, 'read') and callable(file.read):
